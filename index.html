@@ -1,0 +1,64 @@
+<h1>Insira um arquivo de texto para buscar os emails presentes</h1>
+<input type="file" id="fileinput" />
+<a download="info.txt" id="downloadlink" style="display: none">Clique aqui para fazer o download do arquivo resposta.</a>
+
+<script type="text/javascript">
+  var emails = ''
+  var textFile = null
+  function readSingleFile(evt) {
+    emails = ''
+    var f = evt.target.files[0];
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) {
+	      var text = e.target.result;
+        var lines = text.split('\n').filter(function(el){return el.length>0})
+        var emailRegex = /(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+        emails = lines.reduce(function(total, current){
+          while (match = emailRegex.exec(current)){
+            total += (match[0]) + '\n';
+            current = current.replace(match[0],"")
+          }
+          return total
+        },'')
+        var data = new Blob([emails], {type: 'text/plain'});
+        if (textFile !== null) {
+          window.URL.revokeObjectURL(textFile);
+        }
+        textFile = window.URL.createObjectURL(data);
+
+        var link = document.getElementById('downloadlink');
+        link.href = textFile;
+        link.style.display = 'block';
+
+      }
+      r.readAsText(f)
+    } else {
+      alert("Failed to load file")
+    }
+  }
+  document.getElementById('fileinput').addEventListener('change', readSingleFile, false)
+
+
+
+  // (function () {
+  // var textFile = null,
+  //   makeTextFile = function (text) {
+  //     var data = new Blob([text], {type: 'text/plain'});
+  //     if (textFile !== null) {
+  //       window.URL.revokeObjectURL(textFile);
+  //     }
+  //     textFile = window.URL.createObjectURL(data);
+  //     return textFile;
+  //   };
+  //   var create = document.getElementById('create'),
+  //     textbox = document.getElementById('textbox');
+  //
+  //   create.addEventListener('click', function () {
+  //     var link = document.getElementById('downloadlink');
+  //     link.href = makeTextFile(textbox.value);
+  //     link.style.display = 'block';
+  //   }, false);
+  // })();
+
+</script>
